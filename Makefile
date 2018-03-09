@@ -6,9 +6,13 @@ export RUSTFLAGS ?= -Ctarget-cpu=native
 TARGET           := $(shell GOOS=$(shell go env GOHOSTOS) GOARCH=$(shell go env GOHOSTARCH) \
                             go run target.go $(shell go env GOOS) $(shell go env GOARCH))
 
-.PHONY: build
+.PHONY: build build-hs
 build: edwards25519/libed25519_dalek_rustgo.syso
 		go build
+
+build-hs:
+# need a --force flag because cabal/ghc-pkg is stupid https://github.com/haskell/cabal/issues/1317
+		cabal build --ghc-pkg-option=--force
 
 edwards25519/libed25519_dalek_rustgo.syso: target/$(TARGET)/release/libed25519_dalek_rustgo.a
 ifeq ($(shell go env GOOS),darwin)
@@ -28,7 +32,9 @@ uninstall:
 		rm -f "$(INSTALL_PATH)/edwards25519.a"
 
 .PHONY: clean clean-go
-clean: clean-go
+clean: clean-go clean-hs
 		rm -rf target
 clean-go:
 		rm -rf */*.[oa] */*.syso ed25519-dalek-rustgo
+clean-hs:
+		rm -rf dist

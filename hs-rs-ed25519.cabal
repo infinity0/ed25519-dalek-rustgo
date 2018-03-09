@@ -1,0 +1,24 @@
+-- based on https://mgattozzi.github.io/2016/10/01/haskell-rust.html
+
+name:                hs-rs-ed25519
+version:             0.1.0.0
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable hs-rs-ed25519
+  main-is:             Main.hs
+  hs-source-dirs:      .
+  build-depends:       base >= 4.7 && < 5, bytestring, base16-bytestring
+  default-language:    Haskell2010
+  other-modules:       FLib
+  extra-libraries:     ed25519_dalek_rustgo, pthread
+  extra-lib-dirs:      target/release
+
+library
+  hs-source-dirs:      .
+  exposed-modules:     FLib
+  other-extensions:    ForeignFunctionInterface
+  build-depends:       base >= 4.7 && < 5, bytestring
+  default-language:    Haskell2010
+  extra-libraries:     ed25519_dalek_rustgo, pthread
+  extra-lib-dirs:      target/release
