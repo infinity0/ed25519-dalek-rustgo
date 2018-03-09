@@ -6,6 +6,7 @@ import Data.ByteString.Unsafe
 
 import System.IO.Unsafe
 
+import Foreign.C.Types
 import Foreign.Ptr
 import Foreign.Marshal.Array
 
@@ -18,12 +19,15 @@ import Foreign.Marshal.Array
 foreign import ccall unsafe "scalar_base_mult"
   rawScalarBaseMult :: Ptr Word8 -> Ptr Word8 -> IO ()
 
+_castU8 :: Ptr CChar -> Ptr Word8
+_castU8 = castPtr
+
 unsafeScalarBaseMult :: ByteString -> ByteString
 unsafeScalarBaseMult input = unsafePerformIO $ --
     unsafeUseAsCStringLen input $ \(iptr, _) -> do
     optr <- mallocArray 32
     let ostr = (optr, 32)
-    rawScalarBaseMult (castPtr optr) (castPtr iptr)
+    rawScalarBaseMult (_castU8 optr) (_castU8 iptr)
     unsafePackMallocCStringLen ostr
 
 scalarBaseMult :: ByteString -> Maybe ByteString
