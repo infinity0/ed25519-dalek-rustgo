@@ -2,6 +2,7 @@ module FLib where
 
 import Data.Word
 import Data.ByteString as B
+import Data.ByteString.Unsafe
 
 import System.IO.Unsafe
 
@@ -18,11 +19,12 @@ foreign import ccall unsafe "scalar_base_mult"
   rawScalarBaseMult :: Ptr Word8 -> Ptr Word8 -> IO ()
 
 unsafeScalarBaseMult :: ByteString -> ByteString
-unsafeScalarBaseMult input = unsafePerformIO $ do
-    iarray <- newArray $ unpack input
-    oarray <- mallocArray 32
-    rawScalarBaseMult oarray iarray
-    pack <$> peekArray 32 oarray
+unsafeScalarBaseMult input = unsafePerformIO $ --
+    unsafeUseAsCStringLen input $ \(iptr, _) -> do
+    optr <- mallocArray 32
+    let ostr = (optr, 32)
+    rawScalarBaseMult (castPtr optr) (castPtr iptr)
+    unsafePackMallocCStringLen ostr
 
 scalarBaseMult :: ByteString -> Maybe ByteString
 scalarBaseMult input = case B.length input of
